@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html ng-app="test">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+    <!-- jQuery Mobile -->
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+
+    <!-- Speech Recognition Software -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/annyang/1.4.0/annyang.min.js"></script>
+
+
+    <link rel="stylesheet" href="http://teamcipaws.csweb.kutztown.edu/themes/jquery.mobile.icons.min.css" />
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.3/jquery.mobile.structure-1.4.3.min.css" />
+
+    <!-- Angular JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.11/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.11/angular-resource.min.js"></script>
+
+
+    <script src="http://ipawsteamb.csweb.kutztown.edu/Scripts/jquery.signalR-2.1.2.js"></script>
+    <script src="http://ipawsteamb.csweb.kutztown.edu/signalr/hubs"></script>
+
+    <script>
+        var ipawsApp = angular.module('test', []);
+        ipawsApp.controller('eventController', ['$scope', '$http', function ($scope, $http) {
+            $scope.categories = [];
+
+            if(sessionStorage.getItem("data") === null) {
+                console.log("session !set");
+                $http.get('http://ipaws.ngrok.com/api/user/GetByUser/Tina Pelle').
+                        success(function (data) {
+                            for (var i = 0, len = data.length; i < len; i++) {
+                                var tasks = [];
+                                var category = data[i];
+                                for (var j = 0, len2 = category.tasks.length; j < len2; j++) {
+                                    var task = category.tasks[j];
+                                    tasks.push({
+                                        "TaskId": task.taskId,
+                                        "TaskName": task.taskName
+                                    });
+                                }
+                                ;
+                                $scope.categories.push({
+                                    "CategoryName": category.categoryName,
+                                    "CategoryId": category.categoryId,
+                                    "Tasks": tasks
+                                });
+
+                            };
+                            sessionStorage.setItem("data",JSON.stringify(data))
+                            console.log($scope.categories);
+
+
+                        });
+            }
+            /*else{
+                console.log("session set");
+                var data = JSON.parse(sessionStorage.getItem("data"));
+                for (var i = 0, len = data.length; i < len; i++) {
+                    var tasks = [];
+                    var category = data[i];
+                    for (var j = 0, len2 = category.tasks.length; j < len2; j++) {
+                        var task = category.tasks[j];
+                        tasks.push({
+                            "TaskId": task.taskId,
+                            "TaskName": task.taskName
+                        });
+                    }
+                    ;
+                    $scope.categories.push({
+                        "CategoryName": category.categoryName,
+                        "CategoryId": category.categoryId,
+                        "Tasks": tasks
+                    });
+
+                };
+            }*/
+        }]);
+    </script>
+</head>
+<body>
+<div ng-controller="eventController">
+<ul data-role="listview" data-inset="true" data-filter="true" data-input="#myFilter" id="listtask" ng-repeat="category in categories">
+    <li id="cid{{category.CategoryId}}" data-role="list-divider">{{category.CategoryName}}</li>
+    <li ng-repeat="task in category.Tasks" class="taskpage" id="{{task.TaskId}}"><a>{{task.TaskName}}</a></li>
+</ul>
+</div>
+</body>
+</html>
